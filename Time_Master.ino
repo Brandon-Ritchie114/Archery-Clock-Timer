@@ -1,14 +1,28 @@
-#include "functions.h"
-const byte interruptPin = 2;
-
+ #include "functions.h"
+// Written by Brandon Ritchie
+// At SJSU, 1/23/25
+//buttons 40, 78,75
 void setup()
 {
-  pinMode(interruptPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(interruptPin), emergency, CHANGE);
+  Serial.begin(115200);
+  while (!Serial); // Wait for the serial monitor to connect
+
+  // Initialize USB Host
+  if (Usb.Init() == -1) {
+    Serial.println("USB Initialization Failed");
+
+    while (1) { // error code of E10
+      seconds.outputNum(-1);
+      tens.outputNum(1);
+      minutes.outputNum(0);
+    }
+  }
+  // Attach parser
+    Hid.SetReportParser(0, &HidParser);
   // ab cd light pins
   pinMode(22, OUTPUT);
   pinMode(23, OUTPUT);
-  // minutes pin
+  // minutes pins
   pinMode(24, OUTPUT);
   pinMode(25, OUTPUT);
   pinMode(26, OUTPUT);
@@ -36,10 +50,11 @@ void setup()
   pinMode(45, OUTPUT);
   pinMode(46, OUTPUT);
   pinMode(47, OUTPUT);
+  pinMode(48, OUTPUT);
   // ab cd light pins
   digitalWrite(22, LOW);
   digitalWrite(23, LOW);
-  // minutes pin
+  // minutes pins
   digitalWrite(24, LOW);
   digitalWrite(25, LOW);
   digitalWrite(26, LOW);
@@ -47,7 +62,7 @@ void setup()
   digitalWrite(28, LOW);
   digitalWrite(29, LOW);
   digitalWrite(30, LOW);
-  // tens pin
+  // tens pins
   digitalWrite(31, LOW);
   digitalWrite(32, LOW);
   digitalWrite(33, LOW);
@@ -66,15 +81,26 @@ void setup()
   // lights and dots
   digitalWrite(45, LOW);
   digitalWrite(46, LOW);
-  digitalWrite(47, LOW);
-  startUp();
+  digitalWrite(47, LOW); //dots
+  digitalWrite(48, LOW); //buzzer
 }
-void emergency() {
 
-
-}
-void loop()
-{
-  indoor();
-  // put your main code here, to run repeatedly
+void loop(){
+    // digitalWrite(47, HIGH);
+    // displayTime(1,0,0);
+    displayTime(0,0,0);
+    digitalWrite(ab,LOW);
+    digitalWrite(cd,LOW);
+    Usb.Task(); //78 bottom 75 middle 43 top
+    if(button == 78){
+     button = 0;
+     doubleTimer(2,4,0);
+    }else if(button == 75){
+      button = 0;
+      doubleTimer(3,0,0);
+    }else if(button == 43|| button == 40){
+      button = 0;
+      singleTimer(2,4,0);
+    }
+    //*/
 }
