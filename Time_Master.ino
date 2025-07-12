@@ -9,8 +9,6 @@ void setup()
 
   // Initialize USB Host
   if (Usb.Init() == -1) {
-    Serial.println("USB Initialization Failed");
-
     while (1) { // error code of E10
       seconds.outputNum(-1);
       tens.outputNum(1);
@@ -18,8 +16,8 @@ void setup()
     }
   }
   // Attach parser
-    Hid.SetReportParser(0, &HidParser);
-  // ab cd light pins
+  Hid.SetReportParser(0, &HidParser);
+  // ab cd light pins 
   pinMode(22, OUTPUT);
   pinMode(23, OUTPUT);
   // minutes pins
@@ -86,21 +84,19 @@ void setup()
 }
 
 void loop(){
-    // digitalWrite(47, HIGH);
-    // displayTime(1,0,0);
     displayTime(0,0,0);
     digitalWrite(ab,LOW);
     digitalWrite(cd,LOW);
-    Usb.Task(); //78 bottom 75 middle 43 top
+    Usb.Task(); 
+    //78 bottom 75 middle 43 top
     if(button == 78){
      button = 0;
-     doubleTimer(2,4,0);
+     doubleTimer(2,4,0); //Time is in SECONDS NOT MINUTES 60*4 = 240
     }else if(button == 75){
       button = 0;
-      doubleTimer(3,0,0);
+      doubleTimer(1,2,0); //Time is in SECONDS NOT MINUTES 60*2 = 120
     }else if(button == 43|| button == 40){
       button = 0;
       singleTimer(2,4,0);
-    }
-    //*/
+    }    
 }

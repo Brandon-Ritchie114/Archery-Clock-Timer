@@ -19,7 +19,6 @@ class CustomHIDParser : public HIDReportParser
 protected:
     void Parse(USBHID *hid, bool is_rpt_id, uint8_t len, uint8_t *buf)
     {
-        //Serial.print("Received Data: ");
         button = buf[2];
         Serial.print(button);
         Serial.println();
@@ -121,6 +120,7 @@ void emergen(int g)
         { // resume timer
             emergency = 0;
             digitalWrite(red, LOW);
+            buzz(1);
             digitalWrite(green, HIGH);
             break;
         }
@@ -137,11 +137,8 @@ void emergen(int g)
     }
 }
 
-void timer(int a, int b, int c)
+void timer(int m, int t, int s)
 {
-      m = a;
-      t = b;
-      s = c;
       while (m != -1) // loop for rest of time
       {
           while (t != -1) // once seconds < 0, subtract one tens of seconds.
@@ -155,7 +152,7 @@ void timer(int a, int b, int c)
                   }else if (button == 75){ //end early
                     m = 0;
                     t = 0;
-                    s =0;
+                    s = 0;
                   }
                   Serial.println();
                   displayTime(m,t,s);
@@ -179,7 +176,7 @@ void singleTimer(int m, int t, int s){
     buzz(2);
     digitalWrite(red, HIGH);
     digitalWrite(green, LOW);
-    timer(0, 0, 5); // 5 seconds to switch lines
+    timer(0, 1, 0); // 5 seconds to switch lines
     buzz(1);        // one to shoot
     digitalWrite(green,HIGH);
     digitalWrite(red, LOW);
@@ -195,7 +192,7 @@ void doubleTimer(int m, int t, int s)
     digitalWrite(green,LOW);
     digitalWrite(red, HIGH);
     buzz(2);
-    timer(0, 0, 5); // 5 seconds to switch lines
+    timer(0, 1, 0); // 5 seconds to switch lines
     buzz(1);        // one to shoot
     digitalWrite(green, HIGH);
     digitalWrite(red, LOW);
@@ -203,95 +200,11 @@ void doubleTimer(int m, int t, int s)
     turn = !turn; // flip to cd line
     buzz(2);
     turnLight(turn);        // display CD Line
-    timer(0, 0, 5);         // 5 seconds to switch lines
+    timer(0, 1, 0);         // 5 seconds to switch lines
     buzz(1);
     digitalWrite(green, HIGH);
     digitalWrite(red, LOW);
     timer(m, t, s);
     buzz(3);
 }
-
-// test all connections
-void startUp()
-{
-    delay(100);
-    // turn on and off red, green, numbers, and dots.
-    digitalWrite(red, HIGH);
-    digitalWrite(green, HIGH);
-    digitalWrite(dot, HIGH);
-    delay(500);
-    digitalWrite(red, LOW);
-    digitalWrite(green, LOW);
-    digitalWrite(dot, LOW);
-    // test AB & CD
-    delay(500);
-    digitalWrite(ab, HIGH);
-    delay(500);
-    digitalWrite(ab, LOW);
-    delay(500);
-    digitalWrite(cd, HIGH);
-    delay(500);
-    digitalWrite(cd, LOW);
-    delay(500);
-    // minutes test
-    digitalWrite(24, HIGH);
-    digitalWrite(25, HIGH);
-    digitalWrite(26, HIGH);
-    digitalWrite(27, HIGH);
-    digitalWrite(28, HIGH);
-    digitalWrite(29, HIGH);
-    digitalWrite(30, HIGH);
-    delay(500);
-    minutes.outputNum(8);
-    delay(500);
-    digitalWrite(24, LOW);
-    digitalWrite(25, LOW);
-    digitalWrite(26, LOW);
-    digitalWrite(27, LOW);
-    digitalWrite(28, LOW);
-    digitalWrite(29, LOW);
-    digitalWrite(30, LOW);
-    delay(500);
-    // tens tests
-    digitalWrite(31, HIGH);
-    digitalWrite(32, HIGH);
-    digitalWrite(33, HIGH);
-    digitalWrite(34, HIGH);
-    digitalWrite(35, HIGH);
-    digitalWrite(36, HIGH);
-    digitalWrite(37, HIGH);
-    delay(500);
-    tens.outputNum(5);
-    delay(500);
-    tens.outputNum(10);
-    delay(500);
-    digitalWrite(31, LOW);
-    digitalWrite(32, LOW);
-    digitalWrite(33, LOW);
-    digitalWrite(34, LOW);
-    digitalWrite(35, LOW);
-    digitalWrite(36, LOW);
-    digitalWrite(37, LOW);
-    delay(500);
-    // seconds test
-    digitalWrite(38, HIGH);
-    digitalWrite(39, HIGH);
-    digitalWrite(40, HIGH);
-    digitalWrite(41, HIGH);
-    digitalWrite(42, HIGH);
-    digitalWrite(43, HIGH);
-    digitalWrite(44, HIGH);
-    delay(500);
-    seconds.outputNum(8);
-    delay(500);
-    digitalWrite(38, LOW);
-    digitalWrite(39, LOW);
-    digitalWrite(40, LOW);
-    digitalWrite(41, LOW);
-    digitalWrite(42, LOW);
-    digitalWrite(43, LOW);
-    digitalWrite(44, LOW);
-    delay(500);
-}
-
 #endif
