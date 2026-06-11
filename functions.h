@@ -32,52 +32,42 @@ int cd = 23; // cd line set to digi pin 23
 int red = 45;
 int green = 46;
 // dots
-int dot = 47;
+int dot = 47; //don't need dots when in seconds mode.
 int buzzer = 48;
 bool abLine = false;
 bool cdLine = false;
-int m,t,s;
 DisplayNumber seconds(38, 39, 40, 41, 42, 43, 44);
 DisplayNumber tens(31, 32, 33, 34, 35, 36, 37);
 DisplayNumber minutes(24, 25, 26, 27, 28, 29, 30);
-void buzz(int num)
-{ // 1 -to the line, 2 - clear to shoot, 3 - grab arrwows, 4 - emergency
-    if (num == 1)
-    {
-        digitalWrite(buzzer, HIGH);
-        delay(300);
-        digitalWrite(buzzer, LOW);
-    }
-    else if (num == 2)
-    {
-        digitalWrite(buzzer, HIGH);
-        delay(300);
-        digitalWrite(buzzer, LOW);
-        delay(500);
-        digitalWrite(buzzer, HIGH);
-        delay(300);
-        digitalWrite(buzzer, LOW);
-    }
-    else if (num == 3)
-    {
-        digitalWrite(buzzer, HIGH);
-        delay(300);
-        digitalWrite(buzzer, LOW);
-        delay(500);
-        digitalWrite(buzzer, HIGH);
-        delay(300);
-        digitalWrite(buzzer, LOW);
-        delay(500);
-        digitalWrite(buzzer, HIGH);
-        delay(300);
-        digitalWrite(buzzer, LOW);
-    }
-    else
-    {
-        digitalWrite(buzzer, HIGH);
-        delay(5000);
-        digitalWrite(buzzer, LOW);
-    }
+
+void doubleDisplay(bool val){
+    if(val == true){ //display 4es 
+        minutes.outputNum(4);
+        tens.outputNum(-1);
+        digitalWrite(38, HIGH);
+        digitalWrite(39, HIGH);
+        digitalWrite(40, LOW);
+        digitalWrite(41, HIGH);
+        digitalWrite(42, HIGH);
+        digitalWrite(43, LOW);
+        digitalWrite(44, HIGH);
+      }else if(val == false){ //display n0
+        digitalWrite(31, HIGH); //a 
+        digitalWrite(32, HIGH); //b
+        digitalWrite(33, HIGH); //c
+        digitalWrite(34, LOW); //d
+        digitalWrite(35, HIGH); //e
+        digitalWrite(36, HIGH); //f 
+        digitalWrite(37, LOW); //g
+        seconds.outputNum(0);
+      }
+}
+
+void displayTime(int m, int t, int s)
+{
+    minutes.outputNum(m);
+    tens.outputNum(t);
+    seconds.outputNum(s);
 }
 
 void turnLight(bool i)
@@ -94,44 +84,20 @@ void turnLight(bool i)
     }
 }
 
-void displayTime(int m, int t, int s)
-{
-    minutes.outputNum(m);
-    tens.outputNum(t);
-    seconds.outputNum(s);
-}
-
-void emergen(int g)
+void emergen()
 {
     int emergency = 1;
-    minutes.outputNum(0);
-    tens.outputNum(0);
-    seconds.outputNum(0);
+    displayTime(-2,-2,-2);
     digitalWrite(green, LOW);
     digitalWrite(red, HIGH);
-    buzz(4);
     while (emergency == 1)
     {
-        displayTime(-1,-1,-1);
-        digitalWrite(red, HIGH);
-        digitalWrite(green, LOW);
         Usb.Task();
-        if (button == 75)
-        { // resume timer
+        if (button == 40 || button == 43)
+        { //resume current time
             emergency = 0;
+            timer(0, 1, 0);         // 10 seconds to resume shooting
             digitalWrite(red, LOW);
-            buzz(1);
-            digitalWrite(green, HIGH);
-            break;
-        }
-        else if (button == 40 || button == 43)
-        { //reset timer fully
-            emergency = 0;
-            digitalWrite(red, LOW);            
-            turn != turn;            
-            m = 0;
-            t = 0;
-            s = 0;
             break;
         }
     }
@@ -146,10 +112,12 @@ void timer(int m, int t, int s)
               while (s != -1) // output the number of minutes and seconds. Wait 1 second then suzbtract seconds by 1. break loop and repeat
               {
                   Usb.Task();
-                  if (button == 78) // emergency
+                  if (button == 75 || button == 78) // emergency
                   {
-                      emergen(a);
-                  }else if (button == 75){ //end early
+                    button = 0;
+                    emergen();
+                  }else if (button == 43 || button == 40){ //end early
+                    button = 0;
                     m = 0;
                     t = 0;
                     s = 0;
@@ -157,7 +125,7 @@ void timer(int m, int t, int s)
                   Serial.println();
                   displayTime(m,t,s);
                   s--;
-                  delay(1000);                  
+                  delay(1000);                   
               }
               t--;
               s = 9; // reset seconds
@@ -167,44 +135,44 @@ void timer(int m, int t, int s)
       }
       digitalWrite(red,HIGH);
       digitalWrite(green,LOW);
+      digitalWrite(47, LOW);
 }
 
 void singleTimer(int m, int t, int s){
-    delay(10);       // delay for hardware
-    digitalWrite(ab,HIGH); // deciding what turn it is
+    delay(10);              // delay for hardware
     displayTime(m, t, s);
-    buzz(2);
     digitalWrite(red, HIGH);
     digitalWrite(green, LOW);
-    timer(0, 1, 0); // 5 seconds to switch lines
-    buzz(1);        // one to shoot
-    digitalWrite(green,HIGH);
+    timer(0, 1, 0);         //10 seconds to switch lines
+    digitalWrite(green,HIGH); 
     digitalWrite(red, LOW);
     timer(m, t, s);
-    buzz(3);
 }
 
-void doubleTimer(int m, int t, int s)
-{                    // time set to m minutes
-    delay(10);       // delay for hardware
-    turnLight(turn); // deciding what turn it is
+void doubleTimer(int m, int t, int s) // time set to m minutes
+{
+    delay(10);              // delay for hardware
+    turnLight(turn);        // deciding what turn it is
     displayTime(m, t, s);
     digitalWrite(green,LOW);
     digitalWrite(red, HIGH);
-    buzz(2);
-    timer(0, 1, 0); // 5 seconds to switch lines
-    buzz(1);        // one to shoot
-    digitalWrite(green, HIGH);
-    digitalWrite(red, LOW);
-    timer(m, t, s);
-    turn = !turn; // flip to cd line
-    buzz(2);
-    turnLight(turn);        // display CD Line
     timer(0, 1, 0);         // 5 seconds to switch lines
-    buzz(1);
     digitalWrite(green, HIGH);
     digitalWrite(red, LOW);
     timer(m, t, s);
-    buzz(3);
+    turn = !turn;           // flip shooting line
+    timer(0, 1, 0);         // 10 seconds to switch lines
+    turnLight(turn);        // display shooting line
+    digitalWrite(green, HIGH);
+    digitalWrite(red, LOW);
+    timer(m, t, s);
+}
+
+void startClk(int m, int t, int s, bool dl){
+    if(dl){
+        doubleTimer(m,t,s);
+    }else{
+        singleTimer(m,t,s);
+    }
 }
 #endif

@@ -10,9 +10,14 @@ void setup()
   // Initialize USB Host
   if (Usb.Init() == -1) {
     while (1) { // error code of E10
+      Serial.print("Not work \n");
       seconds.outputNum(-1);
       tens.outputNum(1);
       minutes.outputNum(0);
+      delay(100);
+      if(Usb.Init() == -1){
+        break;
+      }
     }
   }
   // Attach parser
@@ -69,34 +74,71 @@ void setup()
   digitalWrite(36, LOW);
   digitalWrite(37, LOW);
   // seconds pins
-  digitalWrite(38, LOW);
-  digitalWrite(39, LOW);
-  digitalWrite(40, LOW);
-  digitalWrite(41, LOW);
-  digitalWrite(42, LOW);
-  digitalWrite(43, LOW);
-  digitalWrite(44, LOW);
+  digitalWrite(38, LOW); //a 
+  digitalWrite(39, LOW); //b
+  digitalWrite(40, LOW); //c
+  digitalWrite(41, LOW); //d
+  digitalWrite(42, LOW); //e
+  digitalWrite(43, LOW); //f 
+  digitalWrite(44, LOW); //g
   // lights and dots
-  digitalWrite(45, LOW);
-  digitalWrite(46, LOW);
+  digitalWrite(45, LOW); //green
+  digitalWrite(46, LOW); //red
   digitalWrite(47, LOW); //dots
   digitalWrite(48, LOW); //buzzer
 }
 
 void loop(){
-    displayTime(0,0,0);
-    digitalWrite(ab,LOW);
-    digitalWrite(cd,LOW);
-    Usb.Task(); 
-    //78 bottom 75 middle 43 top
-    if(button == 78){
-     button = 0;
-     doubleTimer(2,4,0); //Time is in SECONDS NOT MINUTES 60*4 = 240
-    }else if(button == 75){
+  bool doubleLine = true;
+  int m = 0, t = 2, s = 0; //set default time at shoot of time. 
+  
+  //78 bottom 75 middle 43/40 top. Time is in seconds not minutes 
+  //controller used can output either 43 or 40, varies.
+  while(1){ //setting display time loop
+    displayTime(m,t,s);
+    Usb.Task();
+    if(button == 75){
       button = 0;
-      doubleTimer(1,2,0); //Time is in SECONDS NOT MINUTES 60*2 = 120
+      t+=1;
+      if(t > 6){
+        m+=1;
+        t=0;
+      }
+      delay(10);
+    }else if(button == 78){ //reverse addition code for subtraction.
+      button = 0;
+      t-=1;
+      if(t < 0){
+        m+=1;
+        t=0;
+      }
+      delay(10);
     }else if(button == 43|| button == 40){
       button = 0;
-      singleTimer(2,4,0);
-    }    
+      break;
+    }
+  }
+  
+  while(1){ // double or single timer loop
+    doubleDisplay(doubleLine);
+    Usb.Task();
+    if(button == 75 || button == 78){
+      button = 0;
+      doubleLine = !doubleLine;
+    }else if(button == 43 || button == 40){
+      button = 0;
+      break;
+    }
+    delay(10);
+  }
+  
+  while(1){ //timer control loop}
+    if(button == 43 || button == 40){
+      button = 0;
+      startClk(m,t,s,doubleLine);
+    }else if(button == 75 || button == 78){
+      button = 0;
+      break;
+    }
+  }
 }

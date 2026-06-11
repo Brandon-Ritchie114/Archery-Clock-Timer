@@ -24,7 +24,16 @@ DisplayNumber::DisplayNumber(int aa, int ba, int ca, int da, int ea, int fa, int
 
 void DisplayNumber::outputNum(int num)
 {
-  if (num == 0)
+  if(num == -2){
+    digitalWrite(a, LOW);
+    digitalWrite(b, LOW);
+    digitalWrite(c, LOW);
+    digitalWrite(d, LOW);
+    digitalWrite(e, LOW);
+    digitalWrite(f, LOW);
+    digitalWrite(g, LOW);
+  }
+ else if (num == 0)
   {
     Serial.print(0);
     digitalWrite(a, HIGH);
@@ -145,16 +154,5 @@ void DisplayNumber::outputNum(int num)
     digitalWrite(f, HIGH);
     digitalWrite(g, HIGH);
   }
-  else{
-      digitalWrite(a, LOW);
-    digitalWrite(b, LOW);
-    digitalWrite(c, LOW);
-    digitalWrite(d, LOW);
-    digitalWrite(e, LOW);
-    digitalWrite(f, LOW);
-    digitalWrite(g, LOW);
-  }
 }
-
-
 #endif
