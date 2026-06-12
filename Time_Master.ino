@@ -23,8 +23,8 @@ void setup()
   // Attach parser
   Hid.SetReportParser(0, &HidParser);
   // ab cd light pins 
-  pinMode(22, OUTPUT);
-  pinMode(23, OUTPUT);
+  pinMode(22, OUTPUT); //ab
+  pinMode(23, OUTPUT); //cd
   // minutes pins
   pinMode(24, OUTPUT);
   pinMode(25, OUTPUT);
@@ -89,28 +89,42 @@ void setup()
 }
 
 void loop(){
+  Usb.Task();
+  digitalWrite(45, LOW); //green
+  digitalWrite(46, LOW); //red
+  digitalWrite(22, LOW); //ab
+  digitalWrite(23, LOW); //cd
+  turn = true;
+  Serial.println(button);
   bool doubleLine = true;
   int m = 0, t = 2, s = 0; //set default time at shoot of time. 
   
   //78 bottom 75 middle 43/40 top. Time is in seconds not minutes 
   //controller used can output either 43 or 40, varies.
   while(1){ //setting display time loop
+  
     displayTime(m,t,s);
     Usb.Task();
-    if(button == 75){
+    if(button == 75){ //addition code
       button = 0;
       t+=1;
-      if(t > 6){
+      if(t > 9){
         m+=1;
         t=0;
+        if(m > 9){
+          m = 0;
+        }
       }
       delay(10);
     }else if(button == 78){ //reverse addition code for subtraction.
       button = 0;
       t-=1;
       if(t < 0){
-        m+=1;
-        t=0;
+        m-=1;
+        t=9;
+        if(m < 0){
+          m = 9;
+        }
       }
       delay(10);
     }else if(button == 43|| button == 40){
@@ -131,8 +145,9 @@ void loop(){
     }
     delay(10);
   }
-  
   while(1){ //timer control loop}
+    displayTime(m,t,s);
+    Usb.Task();
     if(button == 43 || button == 40){
       button = 0;
       startClk(m,t,s,doubleLine);

@@ -5,7 +5,7 @@
 class DisplayNumber
 {
 private:
-  int a, b, c, d, e, f, g; // pins
+  int a, b, c, d, e, f, g; //pins
 public:
   DisplayNumber(int aa, int ba, int ca, int da, int ea, int fa, int ga); // takes in pins, added a to variable to differentiate
   void outputNum(int num);                                               // Updates pin values to show correct number

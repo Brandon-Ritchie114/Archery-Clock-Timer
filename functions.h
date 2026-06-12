@@ -11,7 +11,7 @@
 USB Usb;
 USBHub Hub(&Usb);
 HIDUniversal Hid(&Usb);
-int button = 0;
+volatile int button = 0;
 uint8_t *buf;
 bool turn = true;
 class CustomHIDParser : public HIDReportParser
@@ -31,9 +31,8 @@ int cd = 23; // cd line set to digi pin 23
 // Stop go Lights
 int red = 45;
 int green = 46;
-// dots
-int dot = 47; //don't need dots when in seconds mode.
-int buzzer = 48;
+int dot = 47; //don't need dots when in seconds mode
+int buzzer = 48; //don't currently have a buzzer
 bool abLine = false;
 bool cdLine = false;
 DisplayNumber seconds(38, 39, 40, 41, 42, 43, 44);
@@ -52,12 +51,13 @@ void doubleDisplay(bool val){
         digitalWrite(43, LOW);
         digitalWrite(44, HIGH);
       }else if(val == false){ //display n0
-        digitalWrite(31, HIGH); //a 
+        minutes.outputNum(-2);
+        digitalWrite(31, HIGH); //a
         digitalWrite(32, HIGH); //b
         digitalWrite(33, HIGH); //c
         digitalWrite(34, LOW); //d
         digitalWrite(35, HIGH); //e
-        digitalWrite(36, HIGH); //f 
+        digitalWrite(36, HIGH); //f
         digitalWrite(37, LOW); //g
         seconds.outputNum(0);
       }
@@ -65,8 +65,16 @@ void doubleDisplay(bool val){
 
 void displayTime(int m, int t, int s)
 {
-    minutes.outputNum(m);
-    tens.outputNum(t);
+    if(m == 0){
+        minutes.outputNum(-2);
+    }else{
+        minutes.outputNum(m);
+    }
+    if(t == 0 && m == 0){
+        tens.outputNum(-2);
+    }else{
+        tens.outputNum(t);
+    }
     seconds.outputNum(s);
 }
 
@@ -96,8 +104,14 @@ void emergen()
         if (button == 40 || button == 43)
         { //resume current time
             emergency = 0;
-            timer(0, 1, 0);         // 10 seconds to resume shooting
+            displayTime(0,1,0);
+            delay(1000);
+            for(int i = 9; i >= 0; i--){
+                displayTime(0,0,i);
+                delay(1000);
+            }
             digitalWrite(red, LOW);
+            digitalWrite(green, HIGH);
             break;
         }
     }
@@ -125,7 +139,7 @@ void timer(int m, int t, int s)
                   Serial.println();
                   displayTime(m,t,s);
                   s--;
-                  delay(1000);                   
+                  delay(1000);
               }
               t--;
               s = 9; // reset seconds
@@ -135,7 +149,6 @@ void timer(int m, int t, int s)
       }
       digitalWrite(red,HIGH);
       digitalWrite(green,LOW);
-      digitalWrite(47, LOW);
 }
 
 void singleTimer(int m, int t, int s){
@@ -144,7 +157,7 @@ void singleTimer(int m, int t, int s){
     digitalWrite(red, HIGH);
     digitalWrite(green, LOW);
     timer(0, 1, 0);         //10 seconds to switch lines
-    digitalWrite(green,HIGH); 
+    digitalWrite(green,HIGH);
     digitalWrite(red, LOW);
     timer(m, t, s);
 }
@@ -152,24 +165,24 @@ void singleTimer(int m, int t, int s){
 void doubleTimer(int m, int t, int s) // time set to m minutes
 {
     delay(10);              // delay for hardware
-    turnLight(turn);        // deciding what turn it is
+    turnLight(turn);        // display shooting line
     displayTime(m, t, s);
+    digitalWrite(red,HIGH);
     digitalWrite(green,LOW);
-    digitalWrite(red, HIGH);
-    timer(0, 1, 0);         // 5 seconds to switch lines
+    timer(0, 1, 0);         // 10 seconds to switch lines
     digitalWrite(green, HIGH);
     digitalWrite(red, LOW);
     timer(m, t, s);
     turn = !turn;           // flip shooting line
+    turnLight(turn);
     timer(0, 1, 0);         // 10 seconds to switch lines
-    turnLight(turn);        // display shooting line
     digitalWrite(green, HIGH);
     digitalWrite(red, LOW);
     timer(m, t, s);
 }
 
 void startClk(int m, int t, int s, bool dl){
-    if(dl){
+    if(dl == true){
         doubleTimer(m,t,s);
     }else{
         singleTimer(m,t,s);
