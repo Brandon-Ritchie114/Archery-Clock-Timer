@@ -145,8 +145,10 @@ void loop(){
     }
     delay(10);
   }
+
   while(1){ //timer control loop}
     displayTime(m,t,s);
+    digitalWrite(red, HIGH);
     Usb.Task();
     if(button == 43 || button == 40){
       button = 0;

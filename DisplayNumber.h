@@ -33,7 +33,7 @@ void DisplayNumber::outputNum(int num)
     digitalWrite(f, LOW);
     digitalWrite(g, LOW);
   }
- else if (num == 0)
+  else if (num == 0)
   {
     Serial.print(0);
     digitalWrite(a, HIGH);

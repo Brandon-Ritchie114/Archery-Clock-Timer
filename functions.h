@@ -14,6 +14,7 @@ HIDUniversal Hid(&Usb);
 volatile int button = 0;
 uint8_t *buf;
 bool turn = true;
+bool walkUpTime = false;
 class CustomHIDParser : public HIDReportParser
 {
 protected:
@@ -43,13 +44,7 @@ void doubleDisplay(bool val){
     if(val == true){ //display 4es 
         minutes.outputNum(4);
         tens.outputNum(-1);
-        digitalWrite(38, HIGH);
-        digitalWrite(39, HIGH);
-        digitalWrite(40, LOW);
-        digitalWrite(41, HIGH);
-        digitalWrite(42, HIGH);
-        digitalWrite(43, LOW);
-        digitalWrite(44, HIGH);
+        seconds.outputNum(5);
       }else if(val == false){ //display n0
         minutes.outputNum(-2);
         digitalWrite(31, HIGH); //a
@@ -104,14 +99,16 @@ void emergen()
         if (button == 40 || button == 43)
         { //resume current time
             emergency = 0;
-            displayTime(0,1,0);
-            delay(1000);
-            for(int i = 9; i >= 0; i--){
-                displayTime(0,0,i);
+            if(!walkUpTime){
+                displayTime(0,1,0);
                 delay(1000);
+                for(int i = 9; i >= 0; i--){
+                    displayTime(0,0,i);
+                    delay(1000);
+                }
+                digitalWrite(red, LOW);
+                digitalWrite(green, HIGH);
             }
-            digitalWrite(red, LOW);
-            digitalWrite(green, HIGH);
             break;
         }
     }
@@ -156,7 +153,9 @@ void singleTimer(int m, int t, int s){
     displayTime(m, t, s);
     digitalWrite(red, HIGH);
     digitalWrite(green, LOW);
+    walkUpTime = true;
     timer(0, 1, 0);         //10 seconds to switch lines
+    walkUpTime = false;
     digitalWrite(green,HIGH);
     digitalWrite(red, LOW);
     timer(m, t, s);
@@ -169,13 +168,17 @@ void doubleTimer(int m, int t, int s) // time set to m minutes
     displayTime(m, t, s);
     digitalWrite(red,HIGH);
     digitalWrite(green,LOW);
+    walkUpTime = true;
     timer(0, 1, 0);         // 10 seconds to switch lines
     digitalWrite(green, HIGH);
     digitalWrite(red, LOW);
+    walkUpTime = false;
     timer(m, t, s);
     turn = !turn;           // flip shooting line
+    walkUpTime = true;
     turnLight(turn);
     timer(0, 1, 0);         // 10 seconds to switch lines
+    walkUpTime = false;
     digitalWrite(green, HIGH);
     digitalWrite(red, LOW);
     timer(m, t, s);
